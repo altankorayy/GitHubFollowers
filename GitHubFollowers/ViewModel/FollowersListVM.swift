@@ -28,10 +28,9 @@ class FollowersListVM {
         userService.getFollowers(for: username, page: 1) { [weak self] result in
             switch result {
             case .success(let followers):
-                guard let followers = followers else { return }
                 self?.delegate?.updateView(followers)
             case .failure(let error):
-                self?.delegate?.error(error.localizedDescription)
+                self?.delegate?.error(error.rawValue)
             }
         }
     }

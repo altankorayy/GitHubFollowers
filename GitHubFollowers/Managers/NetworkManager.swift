@@ -8,35 +8,36 @@
 import Foundation
 
 protocol UserService {
-    func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower]?, Error>) -> Void)
+    func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower], GFError>) -> Void)
 }
 
-enum NetworkManagerError: Error {
-    case invalidRequest
-    case networkError
-    case invalidResponse
+enum GFError: String, Error {
+    case invalidUsername = "This username created an invalid request. Please try again."
+    case unableToComplete = "Unable to complete your request. Please check your internet connection."
+    case invalidResponse = "Invalid response from the server. Please try again."
+    case invalidData = "The data received from the server was invalid. Please try again."
 }
 
 class NetworkManager: UserService {
     
     let baseUrl = "https://api.github.com"
     
-    func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower]?, Error>) -> Void) {
+    func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower], GFError>) -> Void) {
         let endpoint = baseUrl + "/users/\(username)/followers?per_page=100&page=\(page)"
         
         guard let url = URL(string: endpoint) else {
-            completion(.failure(NetworkManagerError.invalidRequest))
+            completion(.failure(GFError.invalidUsername))
             return
         }
         
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
             guard let data = data, error == nil else {
-                completion(.failure(NetworkManagerError.networkError))
+                completion(.failure(GFError.unableToComplete))
                 return
             }
             
             guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                completion(.failure(NetworkManagerError.invalidResponse))
+                completion(.failure(GFError.invalidResponse))
                 return
             }
             
@@ -44,8 +45,8 @@ class NetworkManager: UserService {
                 do {
                     let followers = try JSONDecoder().decode([Follower].self, from: data)
                     completion(.success(followers))
-                } catch let error {
-                    print(error.localizedDescription)
+                } catch {
+                    completion(.failure(GFError.invalidData))
                 }
             }
         }
