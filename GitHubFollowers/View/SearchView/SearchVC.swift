@@ -7,10 +7,6 @@
 
 import UIKit
 
-protocol TextFieldTextDelegate: AnyObject {
-    func textFieldText(_ text: String)
-}
-
 class SearchVC: UIViewController {
     
     private let logoImage: UIImageView = {
@@ -20,12 +16,10 @@ class SearchVC: UIViewController {
         image.image = UIImage(named: "gh-logo")
         return image
     }()
-    
+            
     private let usernameTextField = GFTextField()
     private let getFollowersButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
     
-    weak var delegate: TextFieldTextDelegate?
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -42,7 +36,7 @@ class SearchVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        navigationController?.isNavigationBarHidden = true
+        navigationController?.setNavigationBarHidden(true, animated: true)
     }
     
     @objc
@@ -51,10 +45,11 @@ class SearchVC: UIViewController {
             presentGFAlertOnMainThread(title: "Empty Username", message: "Please enter a username. We need to know who to look for 😀", buttonTitle: "OK")
             return
         }
-        let followersListVC = FollowersListVC()
-        guard let text = usernameTextField.text else { return }
-        self.delegate?.textFieldText(text)
+        let userService: UserService = NetworkManager()
+        let viewModel = FollowersListVM(userService: userService, username: text)
+        let followersListVC = FollowersListVC(viewModel: viewModel)
         followersListVC.title = text
+                
         navigationController?.pushViewController(followersListVC, animated: true)
     }
     
