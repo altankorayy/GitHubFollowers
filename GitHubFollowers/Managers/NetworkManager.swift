@@ -20,7 +20,9 @@ enum GFError: String, Error {
 
 class NetworkManager: UserService {
     
-    let baseUrl = "https://api.github.com"
+    //Cache manager
+    
+    private let baseUrl = "https://api.github.com"
     
     func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower], GFError>) -> Void) {
         let endpoint = baseUrl + "/users/\(username)/followers?per_page=100&page=\(page)"

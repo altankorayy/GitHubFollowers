@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E145B6382B5EB57D009D51F1 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E145B6372B5EB57D009D51F1 /* ImageLoader.swift */; };
 		E18CA7EF2B5701C70025EF57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18CA7EE2B5701C70025EF57 /* AppDelegate.swift */; };
 		E18CA7F12B5701C70025EF57 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18CA7F02B5701C70025EF57 /* SceneDelegate.swift */; };
 		E18CA7F82B5701C80025EF57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E18CA7F72B5701C80025EF57 /* Assets.xcassets */; };
@@ -50,6 +51,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E145B6372B5EB57D009D51F1 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		E18CA7EB2B5701C70025EF57 /* GitHubFollowers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitHubFollowers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E18CA7EE2B5701C70025EF57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E18CA7F02B5701C70025EF57 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				E1B7049C2B5A856B00DAB89A /* NetworkManager.swift */,
+				E145B6372B5EB57D009D51F1 /* ImageLoader.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -388,6 +391,7 @@
 				E1FF0E922B5845FE00D6794B /* TabBarController.swift in Sources */,
 				E1B7049A2B5A7D7300DAB89A /* User.swift in Sources */,
 				E1AF0C882B5D7A0D00A94064 /* GFAvatarImageView.swift in Sources */,
+				E145B6382B5EB57D009D51F1 /* ImageLoader.swift in Sources */,
 				E1B704982B5A7CAB00DAB89A /* Follower.swift in Sources */,
 				E18CA7F12B5701C70025EF57 /* SceneDelegate.swift in Sources */,
 				E1CAE6952B596D0E002B411C /* GFBodyLabel.swift in Sources */,

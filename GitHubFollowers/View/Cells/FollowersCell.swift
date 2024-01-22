@@ -12,6 +12,7 @@ class FollowersCell: UICollectionViewCell {
     
     let avatarImageView = GFAvatarImageView(frame: .zero)
     let usernameLabel = GFTitleLabel(textAlignment: .center, fontSize: 16)
+    var imageLoaderService: ImageLoaderService? = ImageLoader()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -26,6 +27,18 @@ class FollowersCell: UICollectionViewCell {
     func set(followers: Follower) {
         usernameLabel.text = followers.login
         
+        imageLoaderService?.downloadImage(followers.avatar_url, completion: { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let imageData):
+                DispatchQueue.main.async {
+                    self.avatarImageView.image = UIImage(data: imageData)
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        })
     }
     
     private func configure() {

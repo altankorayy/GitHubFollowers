@@ -23,8 +23,8 @@ class FollowersListVM {
         self.username = username
     }
     
+    
     public func fetchFollowers() {
-        
         userService.getFollowers(for: username, page: 1) { [weak self] result in
             switch result {
             case .success(let followers):
