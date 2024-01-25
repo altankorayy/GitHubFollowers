@@ -39,11 +39,8 @@ class FollowersListVC: UIViewController {
         
         viewModel.fetchFollowers()
         
-        if followers.isEmpty {
-            emptyState()
-        } else {
-            configureDataSource()
-        }
+        configureCollectionView()
+        configureDataSource()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,6 +48,14 @@ class FollowersListVC: UIViewController {
         
         navigationController?.setNavigationBarHidden(false, animated: true)
         navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
+    func configureCollectionView() {
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createThreeColumnFlowLayout())
+        view.addSubview(collectionView)
+        collectionView.delegate = self
+        collectionView.backgroundColor = .systemBackground
+        collectionView.register(FollowersCell.self, forCellWithReuseIdentifier: FollowersCell.identifier)
     }
     
     func configureActivityIndicator() {
@@ -121,6 +126,10 @@ extension FollowersListVC: FollowersListVMOutput {
         
         self.followers.append(contentsOf: model)
         updateData()
+    }
+    
+    func emptyStateContol() {
+        emptyState()
     }
 }
 

@@ -10,6 +10,7 @@ import Foundation
 protocol FollowersListVMOutput: AnyObject {
     func updateView(_ model: [Follower])
     func error(_ error: String)
+    func emptyStateContol()
 }
 
 class FollowersListVM {
@@ -35,6 +36,10 @@ class FollowersListVM {
                 
                 if followers.count < 100 {
                     self?.paginationFinished?()
+                }
+                
+                if followers.isEmpty {
+                    self?.delegate?.emptyStateContol()
                 }
                 
                 self?.delegate?.updateView(followers)
