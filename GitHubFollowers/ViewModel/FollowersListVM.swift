@@ -16,7 +16,10 @@ class FollowersListVM {
     
     private let userService: UserService
     weak var delegate: FollowersListVMOutput?
+    
     private var username: String
+    var page = 1
+    var paginationFinished: (() -> Void)?
     
     init(userService: UserService, username: String) {
         self.userService = userService
@@ -25,9 +28,13 @@ class FollowersListVM {
     
     
     public func fetchFollowers() {
-        userService.getFollowers(for: username, page: 1) { [weak self] result in
+        userService.getFollowers(for: username, page: page) { [weak self] result in
             switch result {
             case .success(let followers):
+                if followers.count < 100 {
+                    self?.paginationFinished?()
+                }
+                
                 self?.delegate?.updateView(followers)
             case .failure(let error):
                 self?.delegate?.error(error.rawValue)

@@ -17,6 +17,9 @@ class FollowersListVC: UIViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, Follower>!
     
     private var username: String?
+    private var page = 1
+    private var hasMoreFollowers = true
+    
     var followers: [Follower] = []
     private let viewModel: FollowersListVM
     
@@ -50,6 +53,7 @@ class FollowersListVC: UIViewController {
 
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createThreeColumnFlowLayout())
         view.addSubview(collectionView)
+        collectionView.delegate = self
         collectionView.backgroundColor = .systemBackground
         collectionView.register(FollowersCell.self, forCellWithReuseIdentifier: FollowersCell.identifier)
     }
@@ -97,8 +101,27 @@ extension FollowersListVC: FollowersListVMOutput {
     }
     
     func updateView(_ model: [Follower]) {
-        self.followers = model
+        self.followers.append(contentsOf: model)
         updateData()
+    }
+}
+
+extension FollowersListVC: UICollectionViewDelegate {
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        let offsetY = scrollView.contentOffset.y
+        let height = scrollView.frame.size.height
+        let contentHeight = scrollView.contentSize.height
+        
+        if offsetY > (contentHeight - height) {
+            guard hasMoreFollowers else { return }
+            
+            viewModel.page += 1
+            viewModel.fetchFollowers()
+            
+            viewModel.paginationFinished = { [weak self] in
+                self?.hasMoreFollowers = false
+            }
+        }
     }
 }
 
