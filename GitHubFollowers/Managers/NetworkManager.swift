@@ -20,7 +20,7 @@ enum GFError: String, Error {
 
 class NetworkManager: UserService {
     
-    //Cache manager
+    #warning("Cache Manager")
     
     private let baseUrl = "https://api.github.com"
     

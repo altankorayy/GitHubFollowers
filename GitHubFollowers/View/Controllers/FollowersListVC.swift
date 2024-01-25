@@ -36,10 +36,14 @@ class FollowersListVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        
         viewModel.fetchFollowers()
         
-        configureCollectionView()
-        configureDataSource()
+        if followers.isEmpty {
+            emptyState()
+        } else {
+            configureDataSource()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -49,13 +53,15 @@ class FollowersListVC: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
     
-    func configureCollectionView() {
-
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createThreeColumnFlowLayout())
-        view.addSubview(collectionView)
-        collectionView.delegate = self
-        collectionView.backgroundColor = .systemBackground
-        collectionView.register(FollowersCell.self, forCellWithReuseIdentifier: FollowersCell.identifier)
+    func configureActivityIndicator() {
+        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(activityIndicator)
+        
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
     
     func createThreeColumnFlowLayout() -> UICollectionViewFlowLayout {
@@ -75,8 +81,8 @@ class FollowersListVC: UIViewController {
     
     func configureDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, Follower>(collectionView: collectionView, cellProvider: { collectionView, indexPath, follower in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FollowersCell.identifier, for: indexPath) as? FollowersCell
-            cell?.set(followers: follower)
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FollowersCell.identifier, for: indexPath) as? FollowersCell else { return UICollectionViewCell() }
+            cell.set(followers: follower)
             return cell
         })
     }
@@ -87,6 +93,14 @@ class FollowersListVC: UIViewController {
         snapshot.appendItems(followers)
         DispatchQueue.main.async { [weak self] in
             self?.dataSource.apply(snapshot, animatingDifferences: true)
+        }
+    }
+    
+    func emptyState() {
+        let message = "This user doesn't have any followers. Go follow them 😀."
+        
+        DispatchQueue.main.async {
+            self.showEmptyStateView(with: message, in: self.view)
         }
     }
 }
@@ -101,6 +115,10 @@ extension FollowersListVC: FollowersListVMOutput {
     }
     
     func updateView(_ model: [Follower]) {
+        if model.isEmpty {
+            return
+        }
+        
         self.followers.append(contentsOf: model)
         updateData()
     }
