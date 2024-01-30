@@ -9,6 +9,7 @@ import Foundation
 
 protocol UserService {
     func getFollowers(for username: String, page: Int, completion: @escaping(Result<[Follower], GFError>) -> Void)
+    func getUserInfo(for username: String, completion: @escaping(Result<User, GFError>) -> Void)
 }
 
 enum GFError: String, Error {
@@ -47,6 +48,37 @@ class NetworkManager: UserService {
                 do {
                     let followers = try JSONDecoder().decode([Follower].self, from: data)
                     completion(.success(followers))
+                } catch {
+                    completion(.failure(GFError.invalidData))
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    func getUserInfo(for username: String, completion: @escaping(Result<User, GFError>) -> Void) {
+        let endPoint = baseUrl + "/users/\(username)"
+        
+        guard let url = URL(string: endPoint) else {
+            completion(.failure(GFError.invalidUsername))
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(.failure(GFError.unableToComplete))
+                return
+            }
+            
+            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                completion(.failure(GFError.invalidResponse))
+                return
+            }
+            
+            DispatchQueue.main.async {
+                do {
+                    let user = try JSONDecoder().decode(User.self, from: data)
+                    completion(.success(user))
                 } catch {
                     completion(.failure(GFError.invalidData))
                 }

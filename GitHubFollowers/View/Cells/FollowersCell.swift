@@ -32,9 +32,13 @@ class FollowersCell: UICollectionViewCell {
             
             switch result {
             case .success(let imageData):
-                DispatchQueue.main.async {
-                    self.avatarImageView.image = UIImage(data: imageData)
-                }
+                
+                let image = UIImage(data: imageData)
+                image?.prepareForDisplay(completionHandler: { preparedImage in
+                    DispatchQueue.main.async {
+                        self.avatarImageView.image = preparedImage
+                    }
+                })
             case .failure(let error):
                 print(error.localizedDescription)
             }

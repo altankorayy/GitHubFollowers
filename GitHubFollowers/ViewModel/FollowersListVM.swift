@@ -18,7 +18,7 @@ class FollowersListVM {
     private let userService: UserService
     weak var delegate: FollowersListVMOutput?
     
-    private var username: String
+    var username: String
     var page = 1
     var paginationFinished: (() -> Void)?
     
