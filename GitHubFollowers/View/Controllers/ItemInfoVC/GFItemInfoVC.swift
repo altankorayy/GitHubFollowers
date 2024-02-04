@@ -7,6 +7,11 @@
 
 import UIKit
 
+protocol UserInfoVCDelegate: AnyObject {
+    func didTapGithubProfile(for user: User)
+    func didTapGetFollowers(for user: User)
+}
+
 class GFItemInfoVC: UIViewController {
     
     let stackView = UIStackView()
@@ -15,6 +20,7 @@ class GFItemInfoVC: UIViewController {
     let actionButton = GFButton()
     
     var user: User
+    weak var delegate: UserInfoVCDelegate?
     
     init(user: User) {
         self.user = user
@@ -31,6 +37,7 @@ class GFItemInfoVC: UIViewController {
         configureBackgroundView()
         layoutUI()
         configureStackView()
+        configureActionButton()
     }
     
     private func configureBackgroundView() {
@@ -38,6 +45,13 @@ class GFItemInfoVC: UIViewController {
         view.clipsToBounds = true
         view.backgroundColor = .secondarySystemBackground
     }
+    
+    private func configureActionButton() {
+        actionButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc
+    func actionButtonTapped() {}
     
     private func configureStackView() {
         stackView.axis = .horizontal

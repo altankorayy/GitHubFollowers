@@ -23,6 +23,7 @@ class FollowersListVC: UIViewController {
     
     var followers: [Follower] = []
     var filteredFollowers: [Follower] = []
+    var userInfo: User?
     
     private let viewModel: FollowersListVM
     
@@ -30,6 +31,7 @@ class FollowersListVC: UIViewController {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         self.viewModel.delegate = self
+        
     }
     
     required init?(coder: NSCoder) {
@@ -41,11 +43,12 @@ class FollowersListVC: UIViewController {
         view.backgroundColor = .systemBackground
         
         viewModel.fetchFollowers()
+        viewModel.getUserInfo()
         
         configureCollectionView()
         configureDataSource()
-        
         configureSearchController()
+        configureNavigationBar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -106,6 +109,26 @@ class FollowersListVC: UIViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
     }
     
+    private func configureNavigationBar() {
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAddButton))
+        navigationItem.rightBarButtonItem = addButton
+    }
+    
+    @objc
+    private func didTapAddButton() {
+        guard let login = userInfo?.login, let avatarUrl = userInfo?.avatar_url else { return }
+        let favorite = Follower(login: login, avatar_url: avatarUrl)
+        
+        PersistanceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
+            guard let self = self else { return }
+            guard let error = error else {
+                self.presentGFAlertOnMainThread(title: "Success!", message: "You have successfully favorited this user 🎉", buttonTitle: "Hooray!")
+                return
+            }
+            self.presentGFAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "OK")
+        }
+    }
+    
     func updateData(on followers: [Follower]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Follower>()
         snapshot.appendSections([.main])
@@ -138,6 +161,10 @@ extension FollowersListVC: FollowersListVMOutput {
         
         self.followers.append(contentsOf: model)
         updateData(on: followers)
+    }
+    
+    func getUserInfo(_ model: User) {
+        self.userInfo = model
     }
     
     func emptyStateContol() {

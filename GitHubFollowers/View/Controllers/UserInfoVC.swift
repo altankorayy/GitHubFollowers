@@ -8,13 +8,14 @@
 import UIKit
 
 class UserInfoVC: UIViewController {
-    
+        
     var username: String?
     private let viewModel: UserInfoVM
     
     let headerView = UIView()
     let itemViewFirst = UIView()
     let itemViewSecond = UIView()
+    let dateLabel = GFBodyLabel(textAlignment: .center)
     
     init(viewModel: UserInfoVM) {
         self.viewModel = viewModel
@@ -31,7 +32,7 @@ class UserInfoVC: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = .systemBackground
-        view.addSubviews(headerView, itemViewFirst, itemViewSecond)
+        view.addSubviews(headerView, itemViewFirst, itemViewSecond, dateLabel)
         
         viewModel.getUserInfo()
         
@@ -62,7 +63,7 @@ class UserInfoVC: UIViewController {
         itemViewSecond.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 30),
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 20),
             headerView.heightAnchor.constraint(equalToConstant: 180),
@@ -76,6 +77,11 @@ class UserInfoVC: UIViewController {
             itemViewSecond.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             itemViewSecond.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             itemViewSecond.heightAnchor.constraint(equalToConstant: 140),
+            
+            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            dateLabel.topAnchor.constraint(equalTo: itemViewSecond.bottomAnchor, constant: 20),
+            dateLabel.heightAnchor.constraint(equalToConstant: 18)
         ])
     }
     
@@ -84,13 +90,44 @@ class UserInfoVC: UIViewController {
 extension UserInfoVC: UserInfoOutput {
     func updateView(_ model: User) {
         DispatchQueue.main.async {
+            let repoItemVC = GFRepoItemInfoVC(user: model)
+            repoItemVC.delegate = self
+            
+            let followerItemVC = GFFollowerItemVC(user: model)
+            followerItemVC.delegate = self
+            
             self.add(childVC: GFUserInfoHeaderVC(user: model), to: self.headerView)
-            self.add(childVC: GFRepoItemInfoVC(user: model), to: self.itemViewFirst)
-            self.add(childVC: GFFollowerItemVC(user: model), to: self.itemViewSecond)
+            self.add(childVC: repoItemVC, to: self.itemViewFirst)
+            self.add(childVC: followerItemVC, to: self.itemViewSecond)
+            self.dateLabel.text = "GitHub since \(model.created_at.convertToDisplayFormat())"
         }
     }
     
     func error(_ error: String) {
         print(error)
+    }
+}
+
+extension UserInfoVC: UserInfoVCDelegate {
+    func didTapGithubProfile(for user: User) {
+        guard let url = URL(string: user.html_url) else {
+            presentGFAlertOnMainThread(title: "Invalid URL", message: "The url attached to this user is invalid.", buttonTitle: "OK")
+            return
+        }
+        presentSafariVC(with: url)
+    }
+    
+    func didTapGetFollowers(for user: User) {
+        guard user.followers != 0 else {
+            presentGFAlertOnMainThread(title: "No Followers", message: "This user has no followers. What a shame 😔", buttonTitle: "So sad")
+            return
+        }
+        
+        let userService: UserService = NetworkManager()
+        let viewModel = FollowersListVM(userService: userService, username: user.login)
+        let followersListVC = FollowersListVC(viewModel: viewModel)
+        
+        followersListVC.title = user.login
+        navigationController?.pushViewController(followersListVC, animated: true)
     }
 }
