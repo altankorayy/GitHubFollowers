@@ -24,6 +24,13 @@ class FollowersCell: UICollectionViewCell {
         fatalError()
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        self.avatarImageView.image = nil
+        self.usernameLabel.text = nil
+    }
+    
     func set(followers: Follower) {
         usernameLabel.text = followers.login
         
@@ -32,13 +39,11 @@ class FollowersCell: UICollectionViewCell {
             
             switch result {
             case .success(let imageData):
-                
                 let image = UIImage(data: imageData)
-                image?.prepareForDisplay(completionHandler: { preparedImage in
-                    DispatchQueue.main.async {
-                        self.avatarImageView.image = preparedImage
-                    }
-                })
+                
+                DispatchQueue.main.async {
+                    self.avatarImageView.image = image
+                }
             case .failure(let error):
                 print(error.localizedDescription)
             }
