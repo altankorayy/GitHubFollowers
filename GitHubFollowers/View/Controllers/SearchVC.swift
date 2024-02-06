@@ -16,6 +16,8 @@ class SearchVC: UIViewController {
         image.image = UIImage(named: "gh-logo")
         return image
     }()
+    
+    var logoImageViewTopConstraints: NSLayoutConstraint!
             
     private let usernameTextField = GFTextField()
     private let getFollowersButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
@@ -42,7 +44,7 @@ class SearchVC: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        usernameTextField.text = nil
+        usernameTextField.text = ""
     }
     
     @objc
@@ -57,16 +59,20 @@ class SearchVC: UIViewController {
         followersListVC.title = text
                 
         navigationController?.pushViewController(followersListVC, animated: true)
+        usernameTextField.resignFirstResponder()
     }
     
     private func createDismissKeyboardTapGesture() {
-        let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing))
+        let tap = UITapGestureRecognizer(target: view, action: #selector(UIView.endEditing))
         view.addGestureRecognizer(tap)
     }
     
     private func configureConstraints() {
+        let topConstraintsConstants: CGFloat = DeviceTypes.isiPhoneSE || DeviceTypes.isiPhone8Zoomed ? 20 : 80
+        logoImageViewTopConstraints = logoImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: topConstraintsConstants)
+        logoImageViewTopConstraints.isActive = true
+        
         NSLayoutConstraint.activate([
-            logoImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
             logoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             logoImage.heightAnchor.constraint(equalToConstant: 200),
             logoImage.widthAnchor.constraint(equalToConstant: 200),

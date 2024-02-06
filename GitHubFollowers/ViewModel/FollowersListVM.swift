@@ -30,7 +30,6 @@ class FollowersListVM {
     }
     
     public func fetchFollowers() {
-        #warning("Spinner View")
         userService.getFollowers(for: username, page: page) { [weak self] result in
             switch result {
             case .success(let followers):

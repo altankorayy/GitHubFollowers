@@ -33,5 +33,6 @@ class GFTextField: UITextField {
         textAlignment = .center
         returnKeyType = .go
         minimumFontSize = 12
+        clearButtonMode = .whileEditing
     }
 }

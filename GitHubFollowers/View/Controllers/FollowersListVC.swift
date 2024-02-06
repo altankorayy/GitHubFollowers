@@ -53,6 +53,7 @@ class FollowersListVC: UIViewController {
         configureSearchController()
         configureNavigationBar()
         configureSpinnerView()
+        startAnimating()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -155,7 +156,7 @@ class FollowersListVC: UIViewController {
         DispatchQueue.main.async { [weak self] in
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
-        startAnimating()
+        stopAnimating()
     }
     
     func emptyState() {
@@ -201,7 +202,7 @@ extension FollowersListVC: UICollectionViewDelegate {
         if offsetY > (contentHeight - height) {
             guard hasMoreFollowers else { return }
             
-            stopAnimating()
+            startAnimating()
             
             viewModel.page += 1
             viewModel.fetchFollowers()
@@ -210,7 +211,7 @@ extension FollowersListVC: UICollectionViewDelegate {
                 guard let self = self else { return }
                 
                 self.hasMoreFollowers = false
-                startAnimating()
+                stopAnimating()
             }
         }
     }
