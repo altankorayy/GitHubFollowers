@@ -11,6 +11,8 @@ class FavoritesListVC: UIViewController {
     
     let tableView = UITableView()
     var favorites: [Follower] = []
+    
+    private let refreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,8 +21,9 @@ class FavoritesListVC: UIViewController {
 
         view.backgroundColor = .systemBackground
         view.addSubview(tableView)
-        
         configureTableView()
+        
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -35,7 +38,17 @@ class FavoritesListVC: UIViewController {
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(FavoriteCell.self, forCellReuseIdentifier: FavoriteCell.identifier)
+        tableView.refreshControl = self.refreshControl
         tableView.frame = view.bounds
+    }
+    
+    @objc
+    private func didPullToRefresh() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.tableView.reloadData()
+            self.refreshControl.endRefreshing()
+        }
     }
     
     private func getFavorites() {

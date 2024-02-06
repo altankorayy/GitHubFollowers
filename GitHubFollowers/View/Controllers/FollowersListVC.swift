@@ -13,6 +13,7 @@ class FollowersListVC: UIViewController {
         case main
     }
     
+    private var activityIndicator = UIActivityIndicatorView()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Follower>!
     
@@ -26,6 +27,8 @@ class FollowersListVC: UIViewController {
     var userInfo: User?
     
     private let viewModel: FollowersListVM
+    
+    private let spinnerView = GFSpinnerView()
     
     init(viewModel: FollowersListVM) {
         self.viewModel = viewModel
@@ -49,6 +52,7 @@ class FollowersListVC: UIViewController {
         configureDataSource()
         configureSearchController()
         configureNavigationBar()
+        configureSpinnerView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -64,17 +68,6 @@ class FollowersListVC: UIViewController {
         collectionView.delegate = self
         collectionView.backgroundColor = .systemBackground
         collectionView.register(FollowersCell.self, forCellWithReuseIdentifier: FollowersCell.identifier)
-    }
-    
-    func configureActivityIndicator() {
-        let activityIndicator = UIActivityIndicatorView(style: .large)
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(activityIndicator)
-        
-        NSLayoutConstraint.activate([
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
     }
     
     func createThreeColumnFlowLayout() -> UICollectionViewFlowLayout {
@@ -114,6 +107,32 @@ class FollowersListVC: UIViewController {
         navigationItem.rightBarButtonItem = addButton
     }
     
+    private func configureSpinnerView() {
+        spinnerView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(spinnerView)
+        
+        spinnerView.alpha = 0
+        
+        NSLayoutConstraint.activate([
+            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            spinnerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            spinnerView.widthAnchor.constraint(equalToConstant: 100),
+            spinnerView.heightAnchor.constraint(equalToConstant: 80)
+        ])
+    }
+    
+    private func startAnimating() {
+        UIView.animate(withDuration: 0.4) {
+            self.spinnerView.alpha = 1
+        }
+    }
+    
+    private func stopAnimating() {
+        UIView.animate(withDuration: 0.7) {
+            self.spinnerView.alpha = 0
+        }
+    }
+    
     @objc
     private func didTapAddButton() {
         guard let login = userInfo?.login, let avatarUrl = userInfo?.avatar_url else { return }
@@ -136,6 +155,7 @@ class FollowersListVC: UIViewController {
         DispatchQueue.main.async { [weak self] in
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
+        startAnimating()
     }
     
     func emptyState() {
@@ -181,11 +201,16 @@ extension FollowersListVC: UICollectionViewDelegate {
         if offsetY > (contentHeight - height) {
             guard hasMoreFollowers else { return }
             
+            stopAnimating()
+            
             viewModel.page += 1
             viewModel.fetchFollowers()
-            
+
             viewModel.paginationFinished = { [weak self] in
-                self?.hasMoreFollowers = false
+                guard let self = self else { return }
+                
+                self.hasMoreFollowers = false
+                startAnimating()
             }
         }
     }

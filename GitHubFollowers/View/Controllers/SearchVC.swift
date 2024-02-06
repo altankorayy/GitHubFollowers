@@ -19,7 +19,7 @@ class SearchVC: UIViewController {
             
     private let usernameTextField = GFTextField()
     private let getFollowersButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -37,6 +37,12 @@ class SearchVC: UIViewController {
         super.viewWillAppear(animated)
         
         navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        usernameTextField.text = nil
     }
     
     @objc

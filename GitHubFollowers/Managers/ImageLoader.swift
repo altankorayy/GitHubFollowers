@@ -18,11 +18,12 @@ enum GFNetworkError: Error {
 
 class ImageLoader: ImageLoaderService {
     
-    let cache = NSCache<NSString, NSData>()
+    var activeTasks: [URL: URLSessionDataTask] = [:]
+    var cache = NSCache<NSString, NSData>()
     
     func downloadImage(_ urlString: String, completion: @escaping(Result<Data, Error>) -> Void) {
-        
         let cacheKey = NSString(string: urlString)
+        
         if let image = cache.object(forKey: cacheKey) {
             completion(.success(image as Data))
             return
@@ -30,7 +31,15 @@ class ImageLoader: ImageLoaderService {
         
         guard let url = URL(string: urlString) else { return }
         
+        if let existingTask = activeTasks[url] {
+            existingTask.cancel()
+        }
+        
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { [weak self] data, response, error in
+            defer {
+                self?.activeTasks[url] = nil
+            }
+            
             guard let data = data, error == nil else {
                 completion(.failure(GFNetworkError.unableToComplete))
                 return
@@ -43,6 +52,8 @@ class ImageLoader: ImageLoaderService {
             completion(.success(data))
             self?.cache.setObject(data as NSData, forKey: cacheKey)
         }
+        
+        activeTasks[url] = task
         task.resume()
     }
 }

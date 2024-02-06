@@ -19,11 +19,12 @@ enum GFError: String, Error {
     case invalidData = "The data received from the server was invalid. Please try again."
     case unableToFavorite = "There was an error favoriting this user. Please try again."
     case alreadyInFavorites = "You've already favorited this user. You must REALLY like them!"
+    case cachedResponseError = "Failed to get cached response."
 }
 
 class NetworkManager: UserService {
     
-    #warning("Cache Manager")
+    let cacheManager = CacheManager()
     
     private let baseUrl = "https://api.github.com"
     
@@ -35,7 +36,16 @@ class NetworkManager: UserService {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+        if let cachedData = cacheManager.cachedAPIResponse(url) {
+            do {
+                let result = try JSONDecoder().decode([Follower].self, from: cachedData)
+                completion(.success(result))
+            } catch {
+                completion(.failure(GFError.cachedResponseError))
+            }
+        }
+        
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { [weak self] data, response, error in
             guard let data = data, error == nil else {
                 completion(.failure(GFError.unableToComplete))
                 return
@@ -49,6 +59,7 @@ class NetworkManager: UserService {
             DispatchQueue.main.async {
                 do {
                     let followers = try JSONDecoder().decode([Follower].self, from: data)
+                    self?.cacheManager.setAPICache(url, data: data)
                     completion(.success(followers))
                 } catch {
                     completion(.failure(GFError.invalidData))
@@ -77,13 +88,11 @@ class NetworkManager: UserService {
                 return
             }
             
-            DispatchQueue.main.async {
-                do {
-                    let user = try JSONDecoder().decode(User.self, from: data)
-                    completion(.success(user))
-                } catch {
-                    completion(.failure(GFError.invalidData))
-                }
+            do {
+                let user = try JSONDecoder().decode(User.self, from: data)
+                completion(.success(user))
+            } catch {
+                completion(.failure(GFError.invalidData))
             }
         }
         task.resume()
