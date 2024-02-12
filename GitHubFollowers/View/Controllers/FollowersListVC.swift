@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FollowersListVC: UIViewController {
+class FollowersListVC: GFDataLoadingVC {
     
     enum Section { //Hashable
         case main
@@ -21,15 +21,14 @@ class FollowersListVC: UIViewController {
     private var page = 1
     private var hasMoreFollowers = true
     private var isSearching = false
+    private var isLoadingMoreFollowers = false
     
     var followers: [Follower] = []
     var filteredFollowers: [Follower] = []
     var userInfo: User?
     
     private let viewModel: FollowersListVM
-    
-    private let spinnerView = GFSpinnerView()
-    
+        
     init(viewModel: FollowersListVM) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -52,8 +51,7 @@ class FollowersListVC: UIViewController {
         configureDataSource()
         configureSearchController()
         configureNavigationBar()
-        configureSpinnerView()
-        startAnimating()
+        showSpinnerView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -97,7 +95,6 @@ class FollowersListVC: UIViewController {
     func configureSearchController() {
         let searchController = UISearchController()
         searchController.searchResultsUpdater = self
-        searchController.searchBar.delegate = self
         searchController.searchBar.placeholder = "Search for a username"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -108,37 +105,12 @@ class FollowersListVC: UIViewController {
         navigationItem.rightBarButtonItem = addButton
     }
     
-    private func configureSpinnerView() {
-        spinnerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(spinnerView)
-        
-        spinnerView.alpha = 0
-        
-        NSLayoutConstraint.activate([
-            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            spinnerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            spinnerView.widthAnchor.constraint(equalToConstant: 100),
-            spinnerView.heightAnchor.constraint(equalToConstant: 80)
-        ])
-    }
-    
-    private func startAnimating() {
-        UIView.animate(withDuration: 0.4) {
-            self.spinnerView.alpha = 1
-        }
-    }
-    
-    private func stopAnimating() {
-        UIView.animate(withDuration: 0.7) {
-            self.spinnerView.alpha = 0
-        }
-    }
-    
     @objc
     private func didTapAddButton() {
         guard let login = userInfo?.login, let avatarUrl = userInfo?.avatar_url else { return }
         let favorite = Follower(login: login, avatar_url: avatarUrl)
         
+        #warning("favorites view model")
         PersistanceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
             guard let self = self else { return }
             guard let error = error else {
@@ -156,11 +128,14 @@ class FollowersListVC: UIViewController {
         DispatchQueue.main.async { [weak self] in
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
-        stopAnimating()
+        dismissSpinnerView()
     }
     
     func emptyState() {
         let message = "This user doesn't have any followers. Go follow them 😀."
+        dismissSpinnerView()
+        
+        #warning("find a new way to show spinner view")
         
         DispatchQueue.main.async {
             self.showEmptyStateView(with: message, in: self.view)
@@ -200,9 +175,9 @@ extension FollowersListVC: UICollectionViewDelegate {
         let contentHeight = scrollView.contentSize.height
         
         if offsetY > (contentHeight - height) {
-            guard hasMoreFollowers else { return }
+            guard hasMoreFollowers, !isLoadingMoreFollowers else { return }
             
-            startAnimating()
+            showSpinnerView()
             
             viewModel.page += 1
             viewModel.fetchFollowers()
@@ -211,7 +186,7 @@ extension FollowersListVC: UICollectionViewDelegate {
                 guard let self = self else { return }
                 
                 self.hasMoreFollowers = false
-                stopAnimating()
+                dismissSpinnerView()
             }
         }
     }
@@ -230,8 +205,10 @@ extension FollowersListVC: UICollectionViewDelegate {
     }
 }
 
-extension FollowersListVC: UISearchResultsUpdating, UISearchBarDelegate {
+extension FollowersListVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
+        isLoadingMoreFollowers = true
+        
         guard let filter = searchController.searchBar.text, !filter.isEmpty else {
             updateData(on: followers)
             isSearching = false
@@ -242,6 +219,8 @@ extension FollowersListVC: UISearchResultsUpdating, UISearchBarDelegate {
         
         filteredFollowers = followers.filter({ $0.login.lowercased().contains(filter.lowercased()) })
         updateData(on: filteredFollowers)
+        
+        isLoadingMoreFollowers = false
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {

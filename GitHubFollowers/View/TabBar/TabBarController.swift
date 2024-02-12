@@ -15,8 +15,8 @@ class TabBarController: UITabBarController {
         let searchViewVC = UINavigationController(rootViewController: SearchVC())
         let favoritesVC = UINavigationController(rootViewController: FavoritesListVC())
         
-        searchViewVC.tabBarItem.image = UIImage(systemName: "magnifyingglass")
-        favoritesVC.tabBarItem.image = UIImage(systemName: "star")
+        searchViewVC.tabBarItem.image = SFSymbols.searchVCTabBarImage
+        favoritesVC.tabBarItem.image = SFSymbols.favoritesVCTabBarImage
         
         favoritesVC.navigationBar.prefersLargeTitles = true
         favoritesVC.navigationItem.largeTitleDisplayMode = .always

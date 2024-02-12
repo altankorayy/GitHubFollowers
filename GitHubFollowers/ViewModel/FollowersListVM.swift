@@ -22,7 +22,7 @@ class FollowersListVM {
     var username: String
     var page = 1
     var paginationFinished: (() -> Void)?
-    var fetchCounter = 1
+    var fetchCounter = 0
     
     init(userService: UserService, username: String) {
         self.userService = userService

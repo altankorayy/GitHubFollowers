@@ -24,6 +24,8 @@ class GFSpinnerView: UIView {
         backgroundColor = .secondarySystemBackground
         layer.cornerRadius = 16
         clipsToBounds = true
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.white.cgColor
     }
     
     private func configureSpinnerView() {

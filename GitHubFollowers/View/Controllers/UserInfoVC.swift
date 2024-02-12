@@ -10,12 +10,15 @@ import UIKit
 class UserInfoVC: UIViewController {
         
     var username: String?
-    private let viewModel: UserInfoVM
-    
     let headerView = UIView()
     let itemViewFirst = UIView()
     let itemViewSecond = UIView()
     let dateLabel = GFBodyLabel(textAlignment: .center)
+    
+    let scrollView = UIScrollView()
+    let contentView = UIView()
+    
+    private let viewModel: UserInfoVM
     
     init(viewModel: UserInfoVM) {
         self.viewModel = viewModel
@@ -32,17 +35,34 @@ class UserInfoVC: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = .systemBackground
-        view.addSubviews(headerView, itemViewFirst, itemViewSecond, dateLabel)
+        contentView.addSubviews(headerView, itemViewFirst, itemViewSecond, dateLabel)
         
         viewModel.getUserInfo()
         
         configureNavigationBar()
         configureConstraints()
+        
+        configureScrollView()
     }
     
     private func configureNavigationBar() {
         let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(didTapDoneButton))
         navigationItem.rightBarButtonItem = doneButton
+    }
+    
+    private func configureScrollView() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        scrollView.pinToEdges(of: view)
+        contentView.pinToEdges(of: scrollView)
+        
+        scrollView.showsVerticalScrollIndicator = false
+        
+        NSLayoutConstraint.activate([
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 600)
+        ])
     }
     
     @objc
@@ -63,25 +83,25 @@ class UserInfoVC: UIViewController {
         itemViewSecond.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 30),
-            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 20),
-            headerView.heightAnchor.constraint(equalToConstant: 180),
+            headerView.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            headerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 20),
+            headerView.heightAnchor.constraint(equalToConstant: 210),
             
             itemViewFirst.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 20),
-            itemViewFirst.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            itemViewFirst.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            itemViewFirst.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            itemViewFirst.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             itemViewFirst.heightAnchor.constraint(equalToConstant: 140),
             
             itemViewSecond.topAnchor.constraint(equalTo: itemViewFirst.bottomAnchor, constant: 20),
-            itemViewSecond.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            itemViewSecond.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            itemViewSecond.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            itemViewSecond.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             itemViewSecond.heightAnchor.constraint(equalToConstant: 140),
             
-            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             dateLabel.topAnchor.constraint(equalTo: itemViewSecond.bottomAnchor, constant: 20),
-            dateLabel.heightAnchor.constraint(equalToConstant: 18)
+            dateLabel.heightAnchor.constraint(equalToConstant: 45)
         ])
     }
     
@@ -90,11 +110,9 @@ class UserInfoVC: UIViewController {
 extension UserInfoVC: UserInfoOutput {
     func updateView(_ model: User) {
         DispatchQueue.main.async {
-            let repoItemVC = GFRepoItemInfoVC(user: model)
-            repoItemVC.delegate = self
+            let repoItemVC = GFRepoItemInfoVC(user: model, delegate: self)
             
-            let followerItemVC = GFFollowerItemVC(user: model)
-            followerItemVC.delegate = self
+            let followerItemVC = GFFollowerItemVC(user: model, delegate: self)
             
             self.add(childVC: GFUserInfoHeaderVC(user: model), to: self.headerView)
             self.add(childVC: repoItemVC, to: self.itemViewFirst)
@@ -108,7 +126,7 @@ extension UserInfoVC: UserInfoOutput {
     }
 }
 
-extension UserInfoVC: UserInfoVCDelegate {
+extension UserInfoVC: GFRepoItemInfoVCDelegate {
     func didTapGithubProfile(for user: User) {
         guard let url = URL(string: user.html_url) else {
             presentGFAlertOnMainThread(title: "Invalid URL", message: "The url attached to this user is invalid.", buttonTitle: "OK")
@@ -116,7 +134,9 @@ extension UserInfoVC: UserInfoVCDelegate {
         }
         presentSafariVC(with: url)
     }
-    
+}
+
+extension UserInfoVC: GFFollowerItemVCDelegate {
     func didTapGetFollowers(for user: User) {
         guard user.followers != 0 else {
             presentGFAlertOnMainThread(title: "No Followers", message: "This user has no followers. What a shame 😔", buttonTitle: "So sad")

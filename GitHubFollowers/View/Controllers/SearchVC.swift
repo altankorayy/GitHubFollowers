@@ -13,12 +13,10 @@ class SearchVC: UIViewController {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
-        image.image = UIImage(named: "gh-logo")
+        image.image = Images.ghLogo
         return image
     }()
-    
-    var logoImageViewTopConstraints: NSLayoutConstraint!
-            
+                
     private let usernameTextField = GFTextField()
     private let getFollowersButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
         
@@ -69,10 +67,9 @@ class SearchVC: UIViewController {
     
     private func configureConstraints() {
         let topConstraintsConstants: CGFloat = DeviceTypes.isiPhoneSE || DeviceTypes.isiPhone8Zoomed ? 20 : 80
-        logoImageViewTopConstraints = logoImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: topConstraintsConstants)
-        logoImageViewTopConstraints.isActive = true
         
         NSLayoutConstraint.activate([
+            logoImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: topConstraintsConstants),
             logoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             logoImage.heightAnchor.constraint(equalToConstant: 200),
             logoImage.widthAnchor.constraint(equalToConstant: 200),

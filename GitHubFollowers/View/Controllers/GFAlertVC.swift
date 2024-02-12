@@ -9,7 +9,7 @@ import UIKit
 
 class GFAlertVC: UIViewController {
     
-    let containerView = UIView()
+    let containerView = GFAlertContainerView()
     let titleLabel = GFTitleLabel(textAlignment: .center, fontSize: 20)
     let messageLabel = GFBodyLabel(textAlignment: .center)
     let okButton = GFButton(backgroundColor: .systemPink, title: "OK")
@@ -42,16 +42,7 @@ class GFAlertVC: UIViewController {
         messageLabel.numberOfLines = 4
         okButton.setTitle(buttonTitle ?? "OK", for: .normal)
         okButton.addTarget(self, action: #selector(didTapOkButton), for: .touchUpInside)
-        configureContainerView()
         configureConstraints()
-    }
-    
-    private func configureContainerView() {
-        containerView.layer.cornerRadius = 16
-        containerView.layer.borderWidth = 2
-        containerView.layer.borderColor = UIColor.white.cgColor
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.backgroundColor = .systemBackground
     }
     
     @objc
