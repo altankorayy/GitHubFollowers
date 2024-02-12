@@ -17,10 +17,10 @@ protocol FollowersListVMOutput: AnyObject {
 
 class FollowersListVM {
     
-    private let userService: UserService?
+    private let userService: UserService
     weak var delegate: FollowersListVMOutput?
     
-    var username: String?
+    var username: String
     var page = 1
     var paginationFinished: (() -> Void)?
     var fetchCounter = 0
@@ -31,10 +31,9 @@ class FollowersListVM {
     }
     
     public func fetchFollowers() {
-        guard let username = username else { return }
         Task {
             do {
-                guard let followers = try await userService?.getFollowers(for: username, page: page) else { return }
+                let followers = try await userService.getFollowers(for: username, page: page)
                 self.fetchCounter += 1
                 
                 if followers.isEmpty && self.fetchCounter == 1 {
