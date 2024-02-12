@@ -42,6 +42,7 @@ class GFAlertVC: UIViewController {
         messageLabel.numberOfLines = 4
         okButton.setTitle(buttonTitle ?? "OK", for: .normal)
         okButton.addTarget(self, action: #selector(didTapOkButton), for: .touchUpInside)
+        
         configureConstraints()
     }
     

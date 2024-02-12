@@ -77,10 +77,9 @@ class FollowersListVM {
     }
     
     public func getUserInfo() {
-        guard let username = username else { return }
         Task {
             do {
-                guard let user = try await userService?.getUserInfo(for: username) else { return }
+                let user = try await userService.getUserInfo(for: username)
                 self.delegate?.getUserInfo(user)
             } catch {
                 if let gfError = error as? GFError {
