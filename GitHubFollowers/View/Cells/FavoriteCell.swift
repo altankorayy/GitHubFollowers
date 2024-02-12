@@ -53,20 +53,31 @@ class FavoriteCell: UITableViewCell {
     public func set(favorite: Follower) {
         usernameLabel.text = favorite.login
         
-        imageLoaderService.downloadImage(favorite.avatar_url) { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let imageData):
+        Task {
+            do {
+                guard let imageData = try await imageLoaderService.downloadImage(favorite.avatar_url) else { return }
                 let image = UIImage(data: imageData)
-                
-                DispatchQueue.main.async {
-                    self.avatarImageView.image = image
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
+                self.avatarImageView.image = image
+            } catch {
+                self.avatarImageView.image = Images.placeholder
             }
         }
+        
+//MARK: - Download Image (iOS < 15.0)
+//        imageLoaderService.downloadImage(favorite.avatar_url) { [weak self] result in
+//            guard let self = self else { return }
+//
+//            switch result {
+//            case .success(let imageData):
+//                let image = UIImage(data: imageData)
+//
+//                DispatchQueue.main.async {
+//                    self.avatarImageView.image = image
+//                }
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//            }
+//        }
         
     }
 

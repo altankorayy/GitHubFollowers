@@ -17,7 +17,7 @@ class GFUserInfoHeaderVC: UIViewController {
     let bioLabel = GFBodyLabel(textAlignment: .left)
     
     var user: User
-    var imageLoader: ImageLoaderService = ImageLoader()
+    var imageLoaderService: ImageLoaderService = ImageLoader()
     
     init(user: User) {
         self.user = user
@@ -38,21 +38,32 @@ class GFUserInfoHeaderVC: UIViewController {
     }
     
     public func configure() {
-        imageLoader.downloadImage(user.avatar_url) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let imageData):
-                
+        Task {
+            do {
+                guard let imageData = try await imageLoaderService.downloadImage(user.avatar_url) else { return }
                 let image = UIImage(data: imageData)
-                image?.prepareForDisplay(completionHandler: { preparedImage in
-                    DispatchQueue.main.async {
-                        self.avatarImageView.image = preparedImage
-                    }
-                })
-            case .failure(let error):
-                print(error.localizedDescription)
+                self.avatarImageView.image = image
+            } catch {
+                self.avatarImageView.image = Images.placeholder
             }
         }
+        
+//MARK: - Download Image (iOS < 15.0)
+//        imageLoader.downloadImage(user.avatar_url) { [weak self] result in
+//            guard let self = self else { return }
+//            switch result {
+//            case .success(let imageData):
+//
+//                let image = UIImage(data: imageData)
+//                image?.prepareForDisplay(completionHandler: { preparedImage in
+//                    DispatchQueue.main.async {
+//                        self.avatarImageView.image = preparedImage
+//                    }
+//                })
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//            }
+//        }
         
         usernameLabel.text = user.login
         nameLabel.text = user.name ?? ""

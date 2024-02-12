@@ -18,7 +18,7 @@ class SearchVC: UIViewController {
     }()
                 
     private let usernameTextField = GFTextField()
-    private let getFollowersButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
+    private let getFollowersButton = GFButton(color: .systemGreen, title: "Get Followers")
         
     override func viewDidLoad() {
         super.viewDidLoad()

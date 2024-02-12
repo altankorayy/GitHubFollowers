@@ -12,7 +12,7 @@ class GFAlertVC: UIViewController {
     let containerView = GFAlertContainerView()
     let titleLabel = GFTitleLabel(textAlignment: .center, fontSize: 20)
     let messageLabel = GFBodyLabel(textAlignment: .center)
-    let okButton = GFButton(backgroundColor: .systemPink, title: "OK")
+    let okButton = GFButton(color: .systemPink, title: "OK")
     
     var alertTitle: String?
     var message: String?

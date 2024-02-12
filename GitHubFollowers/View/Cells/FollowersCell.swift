@@ -12,7 +12,7 @@ class FollowersCell: UICollectionViewCell {
     
     let avatarImageView = GFAvatarImageView(frame: .zero)
     let usernameLabel = GFTitleLabel(textAlignment: .center, fontSize: 16)
-    var imageLoaderService: ImageLoaderService? = ImageLoader()
+    var imageLoaderService: ImageLoaderService = ImageLoader()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -34,20 +34,31 @@ class FollowersCell: UICollectionViewCell {
     func set(followers: Follower) {
         usernameLabel.text = followers.login
         
-        imageLoaderService?.downloadImage(followers.avatar_url, completion: { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let imageData):
+        Task {
+            do {
+                guard let imageData = try await imageLoaderService.downloadImage(followers.avatar_url) else { return }
                 let image = UIImage(data: imageData)
-                
-                DispatchQueue.main.async {
-                    self.avatarImageView.image = image
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
+                self.avatarImageView.image = image
+            } catch {
+                self.avatarImageView.image = Images.placeholder
             }
-        })
+        }
+        
+//MARK: - Download Image (iOS < 15.0)
+//        imageLoaderService?.downloadImage(followers.avatar_url, completion: { [weak self] result in
+//            guard let self = self else { return }
+//
+//            switch result {
+//            case .success(let imageData):
+//                let image = UIImage(data: imageData)
+//
+//                DispatchQueue.main.async {
+//                    self.avatarImageView.image = image
+//                }
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//            }
+//        })
     }
     
     private func configure() {

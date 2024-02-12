@@ -124,6 +124,10 @@ extension UserInfoVC: UserInfoOutput {
     func error(_ error: String) {
         print(error)
     }
+    
+    func presentDefaultErrorDelegate() {
+        presentDefaultError()
+    }
 }
 
 extension UserInfoVC: GFRepoItemInfoVCDelegate {

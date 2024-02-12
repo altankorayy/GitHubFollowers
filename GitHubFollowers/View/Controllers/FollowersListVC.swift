@@ -166,6 +166,10 @@ extension FollowersListVC: FollowersListVMOutput {
     func emptyStateContol() {
         emptyState()
     }
+    
+     func presentDefaultErrorDelegate() {
+        presentDefaultError()
+    }
 }
 
 extension FollowersListVC: UICollectionViewDelegate {
