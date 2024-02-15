@@ -44,18 +44,17 @@ class FollowersListVC: GFDataLoadingVC {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        viewModel.fetchFollowers()
-        viewModel.getUserInfo()
-        
         configureCollectionView()
         configureDataSource()
         configureSearchController()
         configureNavigationBar()
-        showSpinnerView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        viewModel.fetchFollowers()
+        viewModel.getUserInfo()
         
         navigationController?.setNavigationBarHidden(false, animated: true)
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -110,10 +109,9 @@ class FollowersListVC: GFDataLoadingVC {
         guard let login = userInfo?.login, let avatarUrl = userInfo?.avatar_url else { return }
         let favorite = Follower(login: login, avatar_url: avatarUrl)
         
-        #warning("favorites view model")
         PersistanceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
-            guard let self = self else { return }
-            guard let error = error else {
+            guard let self else { return }
+            guard let error else {
                 self.presentGFAlertOnMainThread(title: "Success!", message: "You have successfully favorited this user 🎉", buttonTitle: "Hooray!")
                 return
             }
@@ -128,15 +126,10 @@ class FollowersListVC: GFDataLoadingVC {
         DispatchQueue.main.async { [weak self] in
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
-        dismissSpinnerView()
     }
     
     func emptyState() {
         let message = "This user doesn't have any followers. Go follow them 😀."
-        dismissSpinnerView()
-        
-        #warning("find a new way to show spinner view")
-        
         DispatchQueue.main.async {
             self.showEmptyStateView(with: message, in: self.view)
         }
@@ -144,14 +137,6 @@ class FollowersListVC: GFDataLoadingVC {
 }
 
 extension FollowersListVC: FollowersListVMOutput {
-    func error(_ error: String) {
-        presentGFAlertOnMainThread(title: "Bad Stuff Happend", message: error, buttonTitle: "OK")
-        
-        DispatchQueue.main.async {
-            self.navigationController?.popToRootViewController(animated: true)
-        }
-    }
-    
     func updateView(_ model: [Follower]) {
         guard !model.isEmpty else { return }
         
@@ -163,13 +148,30 @@ extension FollowersListVC: FollowersListVMOutput {
         self.userInfo = model
     }
     
+    func error(_ error: String) {
+        presentGFAlertOnMainThread(title: "Bad Stuff Happend", message: error, buttonTitle: "OK")
+        
+        DispatchQueue.main.async {
+            self.navigationController?.popToRootViewController(animated: true)
+        }
+    }
+    
+    func presentDefaultErrorDelegate() {
+        presentDefaultError()
+    }
+    
     func emptyStateContol() {
         emptyState()
     }
     
-     func presentDefaultErrorDelegate() {
-        presentDefaultError()
+    func showActivityIndicator(_ state: Bool) {
+        if state {
+            showSpinnerView()
+        } else {
+            dismissSpinnerView()
+        }
     }
+    
 }
 
 extension FollowersListVC: UICollectionViewDelegate {
@@ -181,16 +183,13 @@ extension FollowersListVC: UICollectionViewDelegate {
         if offsetY > (contentHeight - height) {
             guard hasMoreFollowers, !isLoadingMoreFollowers else { return }
             
-            showSpinnerView()
-            
             viewModel.page += 1
             viewModel.fetchFollowers()
 
             viewModel.paginationFinished = { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 
                 self.hasMoreFollowers = false
-                dismissSpinnerView()
             }
         }
     }

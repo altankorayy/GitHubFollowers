@@ -12,24 +12,21 @@ class FavoritesListVC: GFDataLoadingVC {
     let tableView = UITableView()
     var favorites: [Follower] = []
     
+    private let viewModel = FavoritesListVM()
     private let refreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "Favorites"
-
-        view.backgroundColor = .systemBackground
-        view.addSubview(tableView)
+        configureViewController()
         configureTableView()
-        
-        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        configureRefreshControl()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        getFavorites()
+        updateWithFavorites()
     }
     
     private func configureTableView() {
@@ -42,34 +39,27 @@ class FavoritesListVC: GFDataLoadingVC {
         tableView.frame = view.bounds
     }
     
+    private func configureViewController() {
+        title = "Favorites"
+        view.backgroundColor = .systemBackground
+        view.addSubview(tableView)
+    }
+    
+    private func configureRefreshControl() {
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+    }
+    
+    private func updateWithFavorites() {
+        viewModel.delegate = self
+        viewModel.getFavorites()
+    }
+    
     @objc
     private func didPullToRefresh() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.tableView.reloadData()
             self.refreshControl.endRefreshing()
-        }
-    }
-    
-    private func getFavorites() {
-        PersistanceManager.retrieveFavorites { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let favorites):
-                
-                if favorites.isEmpty {
-                    self.showEmptyStateView(with: "No Favorites?\nAdd one on the follower screen.", in: self.view)
-                } else {
-                    self.favorites = favorites
-                    
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                        self.view.bringSubviewToFront(self.tableView)
-                    }
-                }
-            case .failure(let error):
-                self.presentGFAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "OK")
-            }
         }
     }
 }
@@ -80,7 +70,8 @@ extension FavoritesListVC: UITableViewDelegate, UITableViewDataSource {
             return UITableViewCell()
         }
         let favorite = favorites[indexPath.row]
-        cell.set(favorite: favorite)
+        cell.cellIndexPath = indexPath
+        cell.set(favorite: favorite, at: indexPath)
         return cell
     }
     
@@ -110,15 +101,45 @@ extension FavoritesListVC: UITableViewDelegate, UITableViewDataSource {
             let favorite = favorites[indexPath.row]
             
             PersistanceManager.updateWith(favorite: favorite, actionType: .remove) { [weak self] error in
-                guard let self = self else { return }
+                guard let self else { return }
                 
-                if let error = error {
-                    self.presentGFAlertOnMainThread(title: "Unable to remove", message: error.rawValue, buttonTitle: "OK")
-                } else {
-                    favorites.remove(at: indexPath.row)
+                guard let error else {
+                    self.favorites.remove(at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .left)
+                    
+                    if self.favorites.isEmpty {
+                        self.showEmptyStateView(with: "No Favorites?\nAdd one on the follower screen.", in: self.view)
+                    }
+                    return
                 }
+                self.presentGFAlertOnMainThread(title: "Unable to remove", message: error.rawValue, buttonTitle: "OK")
             }
+        }
+    }
+}
+
+extension FavoritesListVC: FavoritesListVMOutput {
+    func updateView(with favorites: [Follower]) {
+        if favorites.isEmpty {
+            self.showEmptyStateView(with: "No Favorites?\nAdd one on the follower screen.", in: self.view)
+        } else {
+            self.favorites = favorites
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.view.bringSubviewToFront(self.tableView)
+            }
+        }
+    }
+    
+    func updateWithError(with error: String) {
+        presentGFAlertOnMainThread(title: "Something went wrong", message: error, buttonTitle: "OK")
+    }
+    
+    func showActivityIndicator(_ state: Bool) {
+        if state {
+            showSpinnerView()
+        } else {
+            dismissSpinnerView()
         }
     }
 }

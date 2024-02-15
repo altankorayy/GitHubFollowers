@@ -10,9 +10,13 @@ import Foundation
 protocol FollowersListVMOutput: AnyObject {
     func updateView(_ model: [Follower])
     func getUserInfo(_ model: User)
+    
     func error(_ error: String)
     func presentDefaultErrorDelegate()
+    
     func emptyStateContol()
+    
+    func showActivityIndicator(_ state: Bool)
 }
 
 class FollowersListVM {
@@ -31,21 +35,24 @@ class FollowersListVM {
     }
     
     public func fetchFollowers() {
+        delegate?.showActivityIndicator(true)
         Task {
             do {
                 let followers = try await userService.getFollowers(for: username, page: page)
                 self.fetchCounter += 1
                 
                 if followers.isEmpty && self.fetchCounter == 1 {
+                    self.delegate?.showActivityIndicator(false)
                     self.delegate?.emptyStateContol()
                     return
                 }
                 if followers.count < 100 {
                     self.paginationFinished?()
                 }
+                self.delegate?.showActivityIndicator(false)
                 self.delegate?.updateView(followers)
             } catch {
-                
+                delegate?.showActivityIndicator(false)
                 if let gfError = error as? GFError {
                     self.delegate?.error(gfError.rawValue)
                 } else {
@@ -53,7 +60,8 @@ class FollowersListVM {
                 }
             }
         }
-        
+    }
+    
 //MARK: - Get Followers (iOS < 15.0)
 //        userService.getFollowers(for: username, page: page) { [weak self] result in
 //            switch result {
@@ -74,14 +82,16 @@ class FollowersListVM {
 //                self?.delegate?.error(error.rawValue)
 //            }
 //        }
-    }
     
     public func getUserInfo() {
+        delegate?.showActivityIndicator(true)
         Task {
             do {
                 let user = try await userService.getUserInfo(for: username)
+                self.delegate?.showActivityIndicator(false)
                 self.delegate?.getUserInfo(user)
             } catch {
+                self.delegate?.showActivityIndicator(false)
                 if let gfError = error as? GFError {
                     self.delegate?.error(gfError.rawValue)
                 } else {

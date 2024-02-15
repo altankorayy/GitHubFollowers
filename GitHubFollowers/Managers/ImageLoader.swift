@@ -18,9 +18,6 @@ enum GFNetworkError: Error {
 }
 
 class ImageLoader: ImageLoaderService {
-    
-#warning("Wrong Image")
-    
     var cache = NSCache<NSString, NSData>()
     
     func downloadImage(_ urlString: String) async -> Data? {
@@ -40,7 +37,8 @@ class ImageLoader: ImageLoaderService {
             return nil
         }
     }
-    
+}
+
 //MARK: - Download Image (iOS < 15.0)
 //    func downloadImage(_ urlString: String, completion: @escaping(Result<Data, Error>) -> Void) {
 //        let cacheKey = NSString(string: urlString)
@@ -69,4 +67,3 @@ class ImageLoader: ImageLoaderService {
 //
 //        task.resume()
 //    }
-}

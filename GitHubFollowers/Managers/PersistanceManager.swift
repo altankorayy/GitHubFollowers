@@ -60,7 +60,6 @@ enum PersistanceManager {
                 }
                 
                 completion(saveFavorites(favorites: favorites))
-                
             case .failure(let error):
                 completion(error)
             }
