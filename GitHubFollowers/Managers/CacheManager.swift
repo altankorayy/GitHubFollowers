@@ -7,7 +7,7 @@
 
 import Foundation
 
-class CacheManager {
+final class CacheManager {
     
     var apiDataCache = NSCache<NSString, NSData>()
     

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class UserInfoVC: UIViewController {
+final class UserInfoVC: UIViewController {
         
     var username: String?
     let headerView = UIView()

@@ -25,7 +25,7 @@ enum GFError: String, Error {
     case cachedResponseError = "Failed to get cached response."
 }
 
-class NetworkManager: UserService {
+final class NetworkManager: UserService {
     
     let cacheManager = CacheManager()
     

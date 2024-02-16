@@ -11,7 +11,7 @@ protocol GFRepoItemInfoVCDelegate: AnyObject {
     func didTapGithubProfile(for user: User)
 }
 
-class GFRepoItemInfoVC: GFItemInfoVC {
+final class GFRepoItemInfoVC: GFItemInfoVC {
     
     weak var delegate: GFRepoItemInfoVCDelegate?
     

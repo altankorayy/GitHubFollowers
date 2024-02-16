@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FavoriteCell: UITableViewCell {
+final class FavoriteCell: UITableViewCell {
 
     static let identifier = "FavoriteCell"
     

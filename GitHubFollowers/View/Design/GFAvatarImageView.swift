@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GFAvatarImageView: UIImageView {
+final class GFAvatarImageView: UIImageView {
     
     let placeholderImage = Images.placeholder
 

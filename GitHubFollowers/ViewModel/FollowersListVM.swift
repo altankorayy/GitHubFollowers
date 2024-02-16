@@ -10,19 +10,20 @@ import Foundation
 protocol FollowersListVMOutput: AnyObject {
     func updateView(_ model: [Follower])
     func getUserInfo(_ model: User)
-    
     func error(_ error: String)
+}
+
+protocol StateHandling: AnyObject {
     func presentDefaultErrorDelegate()
-    
     func emptyStateContol()
-    
     func showActivityIndicator(_ state: Bool)
 }
 
-class FollowersListVM {
+final class FollowersListVM {
     
     private let userService: UserService
     weak var delegate: FollowersListVMOutput?
+    weak var stateHandlingDelegate: StateHandling?
     
     var username: String
     var page = 1
@@ -35,28 +36,28 @@ class FollowersListVM {
     }
     
     public func fetchFollowers() {
-        delegate?.showActivityIndicator(true)
+        stateHandlingDelegate?.showActivityIndicator(true)
         Task {
             do {
                 let followers = try await userService.getFollowers(for: username, page: page)
                 self.fetchCounter += 1
                 
                 if followers.isEmpty && self.fetchCounter == 1 {
-                    self.delegate?.showActivityIndicator(false)
-                    self.delegate?.emptyStateContol()
+                    self.stateHandlingDelegate?.showActivityIndicator(false)
+                    self.stateHandlingDelegate?.emptyStateContol()
                     return
                 }
                 if followers.count < 100 {
                     self.paginationFinished?()
                 }
-                self.delegate?.showActivityIndicator(false)
+                self.stateHandlingDelegate?.showActivityIndicator(false)
                 self.delegate?.updateView(followers)
             } catch {
-                delegate?.showActivityIndicator(false)
+                stateHandlingDelegate?.showActivityIndicator(false)
                 if let gfError = error as? GFError {
                     self.delegate?.error(gfError.rawValue)
                 } else {
-                    self.delegate?.presentDefaultErrorDelegate()
+                    self.stateHandlingDelegate?.presentDefaultErrorDelegate()
                 }
             }
         }
@@ -84,18 +85,18 @@ class FollowersListVM {
 //        }
     
     public func getUserInfo() {
-        delegate?.showActivityIndicator(true)
+        stateHandlingDelegate?.showActivityIndicator(true)
         Task {
             do {
                 let user = try await userService.getUserInfo(for: username)
-                self.delegate?.showActivityIndicator(false)
+                self.stateHandlingDelegate?.showActivityIndicator(false)
                 self.delegate?.getUserInfo(user)
             } catch {
-                self.delegate?.showActivityIndicator(false)
+                self.stateHandlingDelegate?.showActivityIndicator(false)
                 if let gfError = error as? GFError {
                     self.delegate?.error(gfError.rawValue)
                 } else {
-                    self.delegate?.presentDefaultErrorDelegate()
+                    self.stateHandlingDelegate?.presentDefaultErrorDelegate()
                 }
             }
         }

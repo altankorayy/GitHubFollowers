@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FollowersCell: UICollectionViewCell {
+final class FollowersCell: UICollectionViewCell {
     static let identifier = "FollowersCell"
     
     let avatarImageView = GFAvatarImageView(frame: .zero)

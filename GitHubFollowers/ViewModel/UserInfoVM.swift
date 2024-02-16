@@ -13,7 +13,7 @@ protocol UserInfoOutput: AnyObject {
     func presentDefaultErrorDelegate()
 }
 
-class UserInfoVM {
+final class UserInfoVM {
     
     private let userService: UserService
     var username: String

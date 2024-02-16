@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GFSpinnerView: UIView {
+final class GFSpinnerView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)

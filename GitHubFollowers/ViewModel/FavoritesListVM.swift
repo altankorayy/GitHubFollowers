@@ -13,7 +13,7 @@ protocol FavoritesListVMOutput: AnyObject {
     func showActivityIndicator(_ state: Bool)
 }
 
-class FavoritesListVM {
+final class FavoritesListVM {
     
     weak var delegate: FavoritesListVMOutput?
     

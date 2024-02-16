@@ -17,7 +17,7 @@ enum GFNetworkError: Error {
     case invalidResponse
 }
 
-class ImageLoader: ImageLoaderService {
+final class ImageLoader: ImageLoaderService {
     var cache = NSCache<NSString, NSData>()
     
     func downloadImage(_ urlString: String) async -> Data? {

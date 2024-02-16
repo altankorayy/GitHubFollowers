@@ -11,7 +11,7 @@ enum ItemInfoType {
     case repos, gist, followers, following
 }
 
-class GFItemInfoView: UIView {
+final class GFItemInfoView: UIView {
     
     let symbolImageView = UIImageView()
     let titleLabel = GFTitleLabel(textAlignment: .left, fontSize: 14)

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class SearchVC: UIViewController {
+final class SearchVC: UIViewController {
     
     private let logoImage: UIImageView = {
         let image = UIImageView()

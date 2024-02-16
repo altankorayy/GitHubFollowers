@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FollowersListVC: GFDataLoadingVC {
+final class FollowersListVC: GFDataLoadingVC {
     
     enum Section { //Hashable
         case main
@@ -33,6 +33,7 @@ class FollowersListVC: GFDataLoadingVC {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         self.viewModel.delegate = self
+        self.viewModel.stateHandlingDelegate = self
         
     }
     
@@ -136,7 +137,7 @@ class FollowersListVC: GFDataLoadingVC {
     }
 }
 
-extension FollowersListVC: FollowersListVMOutput {
+extension FollowersListVC: FollowersListVMOutput, StateHandling {
     func updateView(_ model: [Follower]) {
         guard !model.isEmpty else { return }
         
