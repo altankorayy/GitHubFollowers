@@ -189,7 +189,6 @@ extension FollowersListVC: UICollectionViewDelegate {
 
             viewModel.paginationFinished = { [weak self] in
                 guard let self else { return }
-                
                 self.hasMoreFollowers = false
             }
         }
@@ -216,6 +215,7 @@ extension FollowersListVC: UISearchResultsUpdating {
         guard let filter = searchController.searchBar.text, !filter.isEmpty else {
             updateData(on: followers)
             isSearching = false
+            isLoadingMoreFollowers = false
             return
         }
         
@@ -230,6 +230,7 @@ extension FollowersListVC: UISearchResultsUpdating {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         isSearching = false
         updateData(on: followers)
+        isLoadingMoreFollowers = false
     }
 }
 
