@@ -51,6 +51,6 @@ GitHub Followers app.
 </div>
 
 <div class="row">
-  <img src="(https://github.com/altankorayy/GitHubFollowers/assets/67483357/0ffddf6c-a0e9-426d-b1e5-2558ac39b3dc" width="200" height="400" class="col-md-6">
+  <img src="https://github.com/altankorayy/GitHubFollowers/assets/67483357/0ffddf6c-a0e9-426d-b1e5-2558ac39b3dc" width="200" height="400" class="col-md-6">
   <img src="https://github.com/altankorayy/GitHubFollowers/assets/67483357/5a349a8c-d829-4478-9293-9d2b82d79585" width="200" height="400" class="col-md-6">
 </div>
