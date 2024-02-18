@@ -14,17 +14,22 @@ final class GitHubFollowersTests: XCTestCase {
     private var userService: MockUserService!
     private var output: MockFollowersListViewModelOutput!
     private let testUsername = "testUser"
+    
+    private var imageLoaderService: MockImageLoaderService!
 
     override func setUpWithError() throws {
         userService = MockUserService()
         followersListVM = FollowersListVM(userService: userService, username: testUsername)
         output = MockFollowersListViewModelOutput()
         followersListVM.delegate = output
+        
+        imageLoaderService = MockImageLoaderService()
     }
 
     override func tearDownWithError() throws {
         followersListVM = nil
         userService = nil
+        imageLoaderService = nil
     }
 
     func testFetchFollowers_whenAPISuccess() throws {
@@ -38,7 +43,7 @@ final class GitHubFollowersTests: XCTestCase {
             XCTAssertEqual(self.output.updateViewArray.first?.login, "testLogin")
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 5)
     }
     
     func testFetchFollowers_whenAPIFailure() throws {
@@ -51,7 +56,7 @@ final class GitHubFollowersTests: XCTestCase {
             XCTAssertEqual(self.output.errorString, GFError.invalidUsername.rawValue)
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 5)
     }
     
     func testGetUserInfo_whenAPISuccess() throws {
@@ -65,7 +70,7 @@ final class GitHubFollowersTests: XCTestCase {
             XCTAssertEqual(self.output.updateUserInfoArray?.login, "testLogin")
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 5)
     }
     
     func testGetUserInfo_whenAPIFailure() throws {
@@ -78,24 +83,74 @@ final class GitHubFollowersTests: XCTestCase {
             XCTAssertEqual(self.output.errorString, GFError.invalidUsername.rawValue)
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 5, handler: nil)
+        waitForExpectations(timeout: 5)
+    }
+    
+    func testDownloadImage_success() throws {
+        let mockImageData = Data()
+        imageLoaderService.downloadImageData = mockImageData
+        
+        let expectation = expectation(description: "Download Image Success")
+        
+        Task {
+            do {
+                let imageData = try await imageLoaderService.downloadImage("https://example.com/image.jpg")
+                XCTAssertEqual(imageData, mockImageData)
+            } catch {
+                XCTFail("Failure: \(error)")
+            }
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5)
+    }
+    
+    func testDownloadImage_failure() throws {
+        let mockError = GFNetworkError.unableToComplete
+        imageLoaderService.downloadImageError = mockError
+        
+        let expectation = expectation(description: "Download Image Failure")
+        
+        Task {
+            do {
+                _ = try await imageLoaderService.downloadImage("https://example.com/image.jpg")
+                XCTFail()
+            } catch let error as GFNetworkError {
+                XCTAssertEqual(error, mockError)
+            } catch {
+                XCTFail()
+            }
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5)
+    }
+    
+    func testSetAPICacheResponse_whenAPICacheSuccess() throws {
+        let cacheManager = CacheManager()
+        let mockUrl = URL(string: "https://example.com")
+        let mockData = Data()
+        
+        cacheManager.setAPICache(mockUrl, data: mockData)
+        let cachedResponse = cacheManager.cachedAPIResponse(mockUrl)
+        
+        XCTAssertEqual(cachedResponse, mockData)
     }
 }
 
 class MockUserService: UserService {
     var getFollowersMockResult: [GitHubFollowers.Follower]?
-    var getFollowersMockError: Error?
+    var getFollowersMockError: GFError?
     
     var getUserInfoMockResult: GitHubFollowers.User?
-    var getUserInfoMockError: Error?
+    var getUserInfoMockError: GFError?
     
     func getFollowers(for username: String, page: Int) async throws -> [GitHubFollowers.Follower] {
         if let result = getFollowersMockResult {
             return result
         } else if let error = getFollowersMockError {
             throw error
+        } else {
+            throw GFError.unableToComplete
         }
-        throw GFError.unableToComplete
     }
     
     func getUserInfo(for username: String) async throws -> GitHubFollowers.User {
@@ -103,8 +158,9 @@ class MockUserService: UserService {
             return result
         } else if let error = getUserInfoMockError {
             throw error
+        } else {
+            throw GFError.unableToComplete
         }
-        throw GFError.unableToComplete
     }
 }
 
@@ -123,5 +179,20 @@ class MockFollowersListViewModelOutput: FollowersListVMOutput {
     
     func error(_ error: String) {
         errorString = error
+    }
+}
+
+class MockImageLoaderService: ImageLoaderService {
+    var downloadImageData: Data?
+    var downloadImageError: GFNetworkError?
+    
+    func downloadImage(_ urlString: String) async throws -> Data? {
+        if let data = downloadImageData {
+            return data
+        } else if let error = downloadImageError {
+            throw error
+        } else {
+            throw GFNetworkError.unableToComplete
+        }
     }
 }
