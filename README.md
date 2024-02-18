@@ -9,7 +9,7 @@ GitHub Followers app.
 
 ## Tech Used
 * Designed with MVVM pattern
-* Concurrency (async/await)
+* Concurrency (async/await)(include iOS<15.0 version)
 * API & Image Caching with NSCache
 * Fully Unit and UI tested
 * CollectionView Diffeble datasource & Custom TableView
