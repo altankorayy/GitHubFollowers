@@ -18,7 +18,7 @@ GitHub Followers app.
 * Concurrency (async/await)(include iOS<15.0 version)
 * API & Image Caching with NSCache
 * Fully Unit and UI tested
-* CollectionView Diffeble datasource & Custom TableView
+* CollectionView Diffable datasource & Custom TableView
 * Run on all iPhone models
 * UIKit with no Storyboard
 * Dark & Light mode support
